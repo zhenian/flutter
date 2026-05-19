@@ -48,7 +48,10 @@ Future<shelf.Response> _applyProxyRules(
     ///    request path.
     final Uri targetUri = rule.getTargetUri();
     final String rewrittenPath = rule.replace(requestPath);
-    final Uri finalTargetUrl = targetUri.resolve(rewrittenPath);
+    final String rewrittenUrl = request.requestedUri.query.isEmpty
+        ? rewrittenPath
+        : '$rewrittenPath?${request.requestedUri.query}';
+    final Uri finalTargetUrl = targetUri.resolve(rewrittenUrl);
     try {
       final shelf.Request proxyBackendRequest = proxyRequest(request, finalTargetUrl);
       final shelf.Response proxyResponse = await proxyHandler(targetUri)(proxyBackendRequest);
