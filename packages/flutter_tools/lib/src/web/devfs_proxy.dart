@@ -52,7 +52,10 @@ sealed class ProxyRule {
   ///    request path and the request query
   Uri finalTargetUri(Uri requestUri) {
     final String rewrittenPath = replace(requestUri.path);
-    return targetUri.resolveUri(Uri(path: rewrittenPath, query: requestUri.query));
+    final Uri rewrittenUri = Uri.parse(rewrittenPath);
+    return targetUri.resolveUri(
+      requestUri.query.isEmpty ? rewrittenUri : rewrittenUri.replace(query: requestUri.query),
+    );
   }
 }
 

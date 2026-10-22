@@ -382,6 +382,39 @@ void main() {
       final Uri target = rule.finalTargetUri(originalRequest.requestedUri);
       expect('$target', 'http://mock-backend.com/api');
     });
+    test('should preserve query parameters from regex replacement', () {
+      final rule = RegexProxyRule(
+        pattern: RegExp(r'^/api/(.*)$'),
+        target: 'http://mock-backend.com',
+        replacement: r'/$1?fixed=1',
+      );
+      final originalRequest = Request('GET', Uri.parse('http://localhost:8000/api/users'));
+      final Uri target = rule.finalTargetUri(originalRequest.requestedUri);
+      expect('$target', 'http://mock-backend.com/users?fixed=1');
+    });
+    test('should preserve query parameters from prefix replacement', () {
+      final rule = PrefixProxyRule(
+        prefix: '/api',
+        target: 'http://mock-backend.com',
+        replacement: '/users?fixed=1',
+      );
+      final originalRequest = Request('GET', Uri.parse('http://localhost:8000/api'));
+      final Uri target = rule.finalTargetUri(originalRequest.requestedUri);
+      expect('$target', 'http://mock-backend.com/users?fixed=1');
+    });
+    test('should prefer original query parameters over replacement query parameters', () {
+      final rule = RegexProxyRule(
+        pattern: RegExp(r'^/api/(.*)$'),
+        target: 'http://mock-backend.com',
+        replacement: r'/$1?fixed=1',
+      );
+      final originalRequest = Request(
+        'GET',
+        Uri.parse('http://localhost:8000/api/users?tag=a&tag=b&q=a%26b&empty='),
+      );
+      final Uri target = rule.finalTargetUri(originalRequest.requestedUri);
+      expect('$target', 'http://mock-backend.com/users?tag=a&tag=b&q=a%26b&empty=');
+    });
   });
 
   group('proxyMiddleware', () {
